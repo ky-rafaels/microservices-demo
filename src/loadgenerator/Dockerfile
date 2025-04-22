@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM python:3.12.8-alpine@sha256:54bec49592c8455de8d5983d984efff76b6417a6af9b5dcc8d0237bf6ad3bd20 AS base
+FROM --platform=$BUILDPLATFORM cgr.dev/ky-rafaels.example.com/python:3.12.10-dev@sha256:c1fe87f34522986cd5a6457c334c1395b634f99c84ebd8832b2ae3d4f0dc372f AS base
 
 FROM base AS builder
 
-RUN apk update \
-    && apk add --no-cache wget g++ linux-headers \
-    && rm -rf /var/cache/apk/*
-
 COPY requirements.txt .
+
+USER root
 
 RUN pip install --prefix="/install" -r requirements.txt
 
-FROM base
-
-RUN apk update \
-    && apk add --no-cache libstdc++ \
-    && rm -rf /var/cache/apk/*
+FROM cgr.dev/ky-rafaels.example.com/python:3.12.10@sha256:c1fe87f34522986cd5a6457c334c1395b634f99c84ebd8832b2ae3d4f0dc372f
 
 WORKDIR /loadgen
+
+USER nonroot
 
 COPY --from=builder /install /usr/local
 
