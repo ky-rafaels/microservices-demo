@@ -12,33 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM python:3.12.8-slim@sha256:123be5684f39d8476e64f47a5fddf38f5e9d839baff5c023c815ae5bdfae0df7 AS base
-
-FROM base AS builder
-
-RUN apt-get -qq update \
-    && apt-get install -y --no-install-recommends g++ \
-    && rm -rf /var/lib/apt/lists/*
+# FROM --platform=$BUILDPLATFORM python:3.12.8-slim@sha256:123be5684f39d8476e64f47a5fddf38f5e9d839baff5c023c815ae5bdfae0df7 AS base
+FROM --platform=$BUILDPLATFORM cgr.dev/ky-rafaels.example.com/python:3.12-dev@sha256:7c6c36a606ab7c5e1a4ee1f1d023e11a95fa51e5968d3c8b64305bcad5393786 AS base
 
 # get packages
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-FROM base
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 
 # get packages
 WORKDIR /shoppingassistantservice
 
-# Grab packages from builder
-COPY --from=builder /usr/local/lib/python3.12/ /usr/local/lib/python3.12/
-
 # Add the application
 COPY . .
 
 # set listen port
-ENV PORT "8080"
+ENV PORT="8080"
 EXPOSE 8080
 
 ENTRYPOINT ["python", "shoppingassistantservice.py"]
